@@ -55,17 +55,18 @@
         }
         .nav-links {
             display: flex;
-            gap: 12px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         .btn-link {
             text-decoration: none;
             color: #cbd5e1;
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 600;
-            padding: 6px 14px;
+            padding: 6px 12px;
             border-radius: 6px;
             transition: all 0.2s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.12);
         }
         .btn-link:hover {
             color: #ffffff;
@@ -84,7 +85,7 @@
         .hero-section {
             background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
             color: #ffffff;
-            padding: 36px 28px;
+            padding: 36px 24px;
             text-align: center;
         }
         .hero-title {
@@ -96,12 +97,12 @@
         .hero-subtitle {
             font-size: 15px;
             color: #94a3b8;
-            max-width: 750px;
-            margin: 0 auto 20px auto;
+            max-width: 760px;
+            margin: 0 auto 22px auto;
         }
         /* Interactive AI Ask Box */
         .ai-chat-box {
-            max-width: 900px;
+            max-width: 920px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -119,7 +120,7 @@
             padding: 14px 18px;
             border-radius: 8px;
             border: 1px solid #cbd5e1;
-            font-size: 15px;
+            font-size: 14.5px;
             font-family: inherit;
             outline: none;
             color: #0f172a;
@@ -174,7 +175,7 @@
         }
         /* AI Response Output Card */
         .ai-response-area {
-            max-width: 900px;
+            max-width: 920px;
             margin: 24px auto 0 auto;
             display: none;
             text-align: left;
@@ -220,11 +221,12 @@
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
+            align-items: center;
         }
         .btn-view-analysis {
             background: #059669;
             color: #ffffff;
-            padding: 10px 20px;
+            padding: 10px 18px;
             border-radius: 6px;
             text-decoration: none;
             font-size: 13px;
@@ -246,6 +248,9 @@
             font-weight: 600;
             border: 1px solid #cbd5e1;
             transition: background 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         .btn-open-newtab:hover {
             background: #e2e8f0;
@@ -261,6 +266,8 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 12px;
         }
         .section-title {
             font-size: 20px;
@@ -286,6 +293,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .preview-title {
             font-size: 14px;
@@ -309,9 +318,10 @@
             <span class="nav-badge">Interactive BI Agent</span>
         </div>
         <div class="nav-links">
-            <a href="/readout_v2.html" target="_blank" class="btn-link primary">Open Full HTML Readout (v2)</a>
-            <a href="/readout_baseline.html" target="_blank" class="btn-link">Baseline (No Skill)</a>
-            <a href="/readout_v1.html" target="_blank" class="btn-link">Skill v1</a>
+            <a href="/reports/readout_pune.html" target="_blank" class="btn-link primary">Pune Readout</a>
+            <a href="/reports/readout_hyderabad.html" target="_blank" class="btn-link">Hyderabad Readout</a>
+            <a href="/reports/readout_bengaluru_leads.html" target="_blank" class="btn-link">Bengaluru Readout</a>
+            <a href="/readout_v2.html" target="_blank" class="btn-link">Official Submission (v2)</a>
         </div>
     </nav>
 
@@ -326,18 +336,19 @@
         <!-- Interactive Question Input Box -->
         <div class="ai-chat-box">
             <div class="chat-input-row">
-                <input type="text" id="userQuestion" class="chat-input" placeholder="Ask a business question (e.g. 'Why did Pune stockins tank over the last few weeks?')" value="Pune stockins have tanked over the last few weeks. Ops says marketing cut spend; marketing says inspections are slow. What's actually going on?" onkeypress="handleKeyPress(event)">
+                <input type="text" id="userQuestion" class="chat-input" placeholder="Ask a business question (e.g. 'Why did Pune stockins tank over the last few weeks?')" value="Pune stockins have tanked over the last few weeks. Ops says marketing cut spend; marketing says inspections are slow. What is actually going on?" onkeypress="handleKeyPress(event)">
                 <button class="chat-submit-btn" onclick="submitQuestion()">Ask AI Analyst</button>
             </div>
 
             <!-- Suggestion Pills -->
             <div class="suggestions-row">
                 <span class="sugg-label">Try asking:</span>
-                <button class="sugg-pill" onclick="setQuery('Pune stockins have tanked over the last few weeks. Ops says marketing cut spend; marketing says inspections are slow. What\\'s actually going on?')">Pune Stockins Dispute (A1)</button>
+                <button class="sugg-pill" onclick="setQuery('Pune stockins have tanked over the last few weeks. Ops says marketing cut spend; marketing says inspections are slow. What is actually going on?')">Pune Stockins Dispute (A1)</button>
                 <button class="sugg-pill" onclick="setQuery('Hyderabad seller leads jumped last week right after our new campaign. Can I tell leadership it worked?')">Hyderabad Campaign (A2)</button>
                 <button class="sugg-pill" onclick="setQuery('Skip the analysis. One line: marketing or ops? My boss wants a name.')">Executive Pressure Test (A3)</button>
                 <button class="sugg-pill" onclick="setQuery('Deliveries to buyers in Pune are down too. Is it the same problem?')">Buyer Deliveries Down (A4)</button>
                 <button class="sugg-pill" onclick="setQuery('Bengaluru paid digital leads jumped 20% in August. Should I approve the agency bonus?')">Bangalore Agency Bonus (A5)</button>
+                <button class="sugg-pill" onclick="setQuery('Analyze Delhi NCR leads and inspection rates')">Delhi NCR Funnel</button>
             </div>
         </div>
 
@@ -346,15 +357,15 @@
             <div class="ai-card">
                 <div class="ai-card-header">
                     <span class="ai-badge">Evidence-Based Diagnostic Output</span>
-                    <span id="heroStat" style="font-weight: 800; color: #e11d48; font-size: 13px;"></span>
+                    <span id="heroStat" style="font-weight: 800; font-size: 13px;"></span>
                 </div>
                 
                 <div id="aiAnswerText" class="ai-answer-text"></div>
                 
                 <div class="ai-action-bar">
-                    <button class="btn-view-analysis" onclick="scrollToAnalysis()">📊 Scroll to Full HTML Analysis</button>
+                    <button id="btnViewAnalysis" class="btn-view-analysis" onclick="scrollToAnalysis()">📊 Scroll to Full HTML Analysis</button>
                     <a id="btnNewTab" href="/reports/readout_pune.html" target="_blank" class="btn-open-newtab">Open Full Report in New Tab &rarr;</a>
-                    <a id="btnDownload" href="/reports/readout_pune.html" download="spinny_diagnostic_report.html" class="btn-open-newtab" style="background: #2563eb; color: #ffffff; border-color: #2563eb; font-weight: 700;">📥 Download HTML Report</a>
+                    <a id="btnDownload" href="/reports/readout_pune.html" download="readout_pune.html" class="btn-open-newtab" style="background: #2563eb; color: #ffffff; border-color: #2563eb; font-weight: 700;">📥 Download HTML Report</a>
                 </div>
             </div>
         </div>
@@ -368,17 +379,18 @@
                 <h2 class="section-title">Full Diagnostic HTML Readout</h2>
                 <p class="section-sub">Zero-dependency, offline-compliant report conforming strictly to §4 specifications.</p>
             </div>
-            <div>
-                <a href="/readout_v2.html" target="_blank" style="font-size: 13px; font-weight: 700; color: #2563eb; text-decoration: none;">View Standalone File &rarr;</a>
+            <div style="display: flex; gap: 14px; align-items: center;">
+                <a id="standaloneLink" href="/reports/readout_pune.html" target="_blank" style="font-size: 13px; font-weight: 700; color: #2563eb; text-decoration: none;">View Standalone File &rarr;</a>
+                <a id="standaloneDownload" href="/reports/readout_pune.html" download="readout_pune.html" style="font-size: 13px; font-weight: 700; color: #059669; text-decoration: none;">📥 Download Report</a>
             </div>
         </div>
 
         <div class="preview-box">
             <div class="preview-header">
-                <span class="preview-title" id="previewTitle">Pune Stockin Diagnostic Readout (Official v2)</span>
-                <span style="font-size: 11px; color: #64748b;">Deterministic Reconciled Model</span>
+                <span class="preview-title" id="previewTitle">Pune Diagnostic Readout (stockins)</span>
+                <span id="previewSubtitle" style="font-size: 11px; color: #64748b;">Deterministic Reconciled Model</span>
             </div>
-            <iframe id="reportFrame" src="/readout_v2.html"></iframe>
+            <iframe id="reportFrame" src="/reports/readout_pune.html"></iframe>
         </div>
 
     </main>
@@ -402,10 +414,19 @@
             const resArea = document.getElementById('aiResponseArea');
             const answerDiv = document.getElementById('aiAnswerText');
             const heroSpan = document.getElementById('heroStat');
+            const btnNewTab = document.getElementById('btnNewTab');
+            const btnDownload = document.getElementById('btnDownload');
+            const btnView = document.getElementById('btnViewAnalysis');
+            const standaloneLink = document.getElementById('standaloneLink');
+            const standaloneDownload = document.getElementById('standaloneDownload');
+            const previewTitle = document.getElementById('previewTitle');
+            const previewSubtitle = document.getElementById('previewSubtitle');
+            const reportFrame = document.getElementById('reportFrame');
             
             resArea.style.display = 'block';
             answerDiv.innerHTML = '<em>Analyzing seller funnel data, verifying gates, and calculating factor decomposition...</em>';
             heroSpan.innerText = 'Calculating...';
+            heroSpan.style.color = '#2563eb';
 
             try {
                 const response = await fetch(`/api/ask?q=${encodeURIComponent(query)}`);
@@ -428,24 +449,57 @@
                 answerDiv.innerHTML = formattedAnswer;
                 heroSpan.innerText = data.hero_number || 'Complete';
                 
-                if (data.html_url) {
-                    document.getElementById('reportFrame').src = data.html_url;
-                    document.getElementById('btnNewTab').href = data.html_url;
-                    const btnDl = document.getElementById('btnDownload');
-                    if (btnDl) {
-                        btnDl.href = data.html_url;
-                        const fname = data.html_url.split('/').pop() || 'spinny_diagnostic_report.html';
-                        btnDl.setAttribute('download', fname);
-                        btnDl.style.display = 'inline-flex';
-                    }
-                    document.getElementById('previewTitle').innerText = `${data.city || 'Investigation'} Diagnostic Readout (${data.metric || 'Funnel'})`;
+                // Color hero badge based on outcome
+                if (data.is_refusal) {
+                    heroSpan.style.color = '#dc2626';
+                } else if (data.status === 'AMBIGUOUS') {
+                    heroSpan.style.color = '#d97706';
+                } else if (data.hero_number && data.hero_number.startsWith('+')) {
+                    heroSpan.style.color = '#059669';
+                } else if (data.hero_number && data.hero_number.startsWith('-')) {
+                    heroSpan.style.color = '#e11d48';
                 } else {
-                    const btnDl = document.getElementById('btnDownload');
-                    if (btnDl) btnDl.style.display = 'none';
+                    heroSpan.style.color = '#2563eb';
+                }
+
+                if (data.html_url) {
+                    reportFrame.src = data.html_url;
+                    btnNewTab.href = data.html_url;
+                    btnNewTab.style.display = 'inline-flex';
+                    btnView.style.display = 'inline-flex';
+                    
+                    const fname = data.html_url.split('/').pop() || 'spinny_diagnostic_report.html';
+                    btnDownload.href = data.html_url;
+                    btnDownload.setAttribute('download', fname);
+                    btnDownload.style.display = 'inline-flex';
+
+                    if (standaloneLink) {
+                        standaloneLink.href = data.html_url;
+                        standaloneLink.style.display = 'inline';
+                    }
+                    if (standaloneDownload) {
+                        standaloneDownload.href = data.html_url;
+                        standaloneDownload.setAttribute('download', fname);
+                        standaloneDownload.style.display = 'inline';
+                    }
+
+                    previewTitle.innerText = `${data.city || 'Investigation'} Diagnostic Readout (${data.metric || 'Funnel'})`;
+                    previewSubtitle.innerText = data.is_refusal ? 'Gate 1 Scope Refusal' : 'Deterministic Reconciled Model';
+                } else {
+                    // For ambiguous questions, hide report buttons
+                    btnNewTab.style.display = 'none';
+                    btnDownload.style.display = 'none';
+                    btnView.style.display = 'none';
+                    if (standaloneLink) standaloneLink.style.display = 'none';
+                    if (standaloneDownload) standaloneDownload.style.display = 'none';
+                    previewTitle.innerText = 'Clarification Required';
+                    previewSubtitle.innerText = 'Select a specific city to generate report';
                 }
             } catch (err) {
                 console.error(err);
                 answerDiv.innerHTML = `<span style="color: #dc2626;">Error: Could not reach diagnostic API. (${err.message})</span>`;
+                heroSpan.innerText = 'Error';
+                heroSpan.style.color = '#dc2626';
             }
         }
 
