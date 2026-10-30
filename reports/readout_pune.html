@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spinny Diagnostic Readout — Pune Stockins Investigation</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --primary-accent: #2563eb;
+            --surface: #ffffff;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --danger: #e11d48;
+            --success: #059669;
+            --warning: #d97706;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.45;
+            padding: 24px 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        /* Header Block */
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            padding: 24px 28px;
+            border-bottom: 3px solid var(--primary-accent);
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .badge-city {
+            background-color: rgba(37, 99, 235, 0.3);
+            border: 1px solid #3b82f6;
+            color: #93c5fd;
+            font-size: 12px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .download-btn {
+            background-color: #2563eb;
+            color: #ffffff;
+            padding: 7px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #3b82f6;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        .download-btn:hover {
+            background-color: #1d4ed8;
+        }
+        .as-of {
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        /* Verdict Banner */
+        .verdict-banner {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .verdict-text {
+            font-size: 14.5px;
+            font-weight: 500;
+            color: #f1f5f9;
+            flex: 1;
+            min-width: 300px;
+        }
+        .hero-box {
+            text-align: right;
+            background: rgba(225, 29, 72, 0.2);
+            border: 1px solid rgba(244, 63, 94, 0.4);
+            padding: 8px 18px;
+            border-radius: 6px;
+        }
+        .hero-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #fda4af;
+            letter-spacing: 0.05em;
+        }
+        .hero-value {
+            font-size: 23px;
+            font-weight: 800;
+            color: #ffffff;
+            font-feature-settings: "tnum";
+        }
+        .hero-sub {
+            font-size: 11px;
+            color: #cbd5e1;
+        }
+        /* 6 Panel Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            padding: 24px;
+        }
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        .panel {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 18px 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+        }
+        .panel-full {
+            grid-column: span 2;
+        }
+        @media (max-width: 900px) {
+            .panel-full { grid-column: span 1; }
+        }
+        .panel-header {
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .panel-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .panel-subtitle {
+            font-size: 11.5px;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #f8fafc;
+            text-align: left;
+            padding: 8px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            border-bottom: 1px solid var(--border);
+        }
+        .caveat-chip {
+            display: inline-block;
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+            font-size: 10.5px;
+            font-weight: 600;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-top: 4px;
+        }
+        .footer {
+            background: #f8fafc;
+            border-top: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        @media print {
+            body { padding: 0; background: #fff; }
+            .container { box-shadow: none; border: none; max-width: 100%; }
+            .download-btn { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header with 30-Second Verdict -->
+    <header class="header">
+        <div class="header-top">
+            <div class="header-title">
+                Spinny Executive Diagnostic Readout
+                <span class="badge-city">Pune Funnel Review</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div class="as-of">Data as of: <strong>2026-10-08</strong></div>
+                <button class="download-btn" onclick="window.print()">📥 Print / Save PDF</button>
+            </div>
+        </div>
+        
+        <div class="verdict-banner">
+            <div class="verdict-text">
+                <span style="color: #38bdf8; font-weight: 700;">Executive Verdict:</span> Pune mature stockins fell by 26.9/week (-22.3% vs 8-week baseline), driven primarily by a collapse in offer acceptance at the pricing stage (-16.7 stockins/wk), NOT by marketing lead cuts or operational inspection slowdowns.
+            </div>
+            <div class="hero-box">
+                <div class="hero-label">Stockins Delta</div>
+                <div class="hero-value">-26.9 stockins/wk (-22.3%)</div>
+                <div class="hero-sub">vs 8-Wk Baseline (120.4/wk)</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 6 Analytical Panels (§4 compliant) -->
+    <main class="grid">
+        
+        <!-- Panel 1: Weekly Trend Chart & Normal Variation -->
+        <section class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    Panel 1: Weekly Stockins Volumes vs 8-Week Historical Baseline
+                    <span class="panel-subtitle">Bars start at zero. Blue = 8-wk baseline; Rose/Emerald = target; Gray = immature/partial lag.</span>
+                </div>
+            </div>
+            
+    <svg viewBox="0 0 540 220" width="100%" height="220" style="overflow: visible;">
+        <!-- Gridlines -->
+        <line x1="50" y1="30" x2="520" y2="30" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+        <text x="42" y="34" font-size="10" font-family="system-ui" fill="#94a3b8" text-anchor="end">169</text>
+        
+        <line x1="50" y1="105.0" x2="520" y2="105.0" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+        <text x="42" y="109.0" font-size="10" font-family="system-ui" fill="#94a3b8" text-anchor="end">84</text>
+        
+        <line x1="50" y1="180" x2="520" y2="180" stroke="#cbd5e1" stroke-width="1.5"/>
+        <text x="42" y="184" font-size="10" font-family="system-ui" fill="#94a3b8" text-anchor="end">0</text>
+        
+        <!-- Baseline Reference Line -->
+        <line x1="50" y1="73.0" x2="520" y2="73.0" stroke="#d97706" stroke-width="2" stroke-dasharray="4 4"/>
+        <text x="520" y="67.0" font-size="10" font-family="system-ui" font-weight="700" fill="#d97706" text-anchor="end">8-Wk Baseline: 120.4/wk</text>
+        
+        <!-- Bars & Labels -->
+        <rect x="55.1" y="66.2" width="26.0" height="113.8" rx="3" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1"><title>2026-07-13: 128 stockins</title></rect>
+<text x="68.1" y="61.2" font-size="9.5" font-family="system-ui, sans-serif" font-weight="700" fill="#1e293b" text-anchor="middle">128</text>
+<rect x="91.2" y="86.7" width="26.0" height="93.3" rx="3" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1"><title>2026-07-20: 105 stockins</title></rect>
+<text x="104.2" y="81.7" font-size="9.5" font-family="system-ui, sans-serif" font-weight="700" fill="#1e293b" text-anchor="middle">105</text>
+<rect x="127.4" y="84.0" width="26.0" height="96.0" rx="3" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1"><title>2026-07-27: 108 stockins</title></rect>
+<text x="140.4" y="79.0" font-size="9.5" font-family="system-ui, sans-serif" font-weight="700" fill="#1e293b" text-anchor="middle">108</text>
+<rect x="163.5" y="60.0" width="26.0" height="120.0" rx="3" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1"><title>2026-08-03: 135 stockins</title></rect>
+<text x="176.5" y="55.0" font-size="9.5" font-family="system-ui, sans-serif" font-weight="700" fill="#1e293b" text-anchor="middle">135</text>
+<rect x="199.7" y="75.1" width="26.0" height="104.9" rx="3" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1"><title>2026-08-10: 118 stockins</title></rect>
+<text x="212.7" y="70.1" font-size="9.5" font-family="system-ui, sans-serif" font-weight="700" fill="#1e293b" text-anchor="middle">118</text>
+<rect x="235.8" y="65.3" width="26.0" height="114.7" rx="3" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1"><title>2026-08-17: 129 stockins</title></rect>
+<text x="248.8" y="60.3" font-size="9.5" font-family="system-ui, sans-serif" font-weight="700" fill="#1e293b" text-anchor="middle">129</text>
+<rect x="272.0" y="78.7" width="26.0" height="101.3" rx="3" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1"><title>2026-08-24: 114 stockins</title></rect>
+<text x="285.0" y="73.7" font-size="9.5" font-family="system-ui, sans-serif" font-weight="700" fill="#1e293b" text-anchor="middle">114</text>
+<rect x="308.2" y="68.0" width="26.0" height="112.0" rx="3" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1"><title>2026-08-31: 126 stockins</title></rect>
+<text x="321.2" y="63.0" font-size="9.5" font-family="system-ui, sans-serif" font-weight="700" fill="#1e293b" text-anchor="middle">126</text>
+<rect x="344.3" y="71.6" width="26.0" height="108.4" rx="3" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1"><title>2026-09-07: 122 stockins</title></rect>
+<text x="357.3" y="66.6" font-size="9.5" font-family="system-ui, sans-serif" font-weight="700" fill="#1e293b" text-anchor="middle">122</text>
+<rect x="380.5" y="94.7" width="26.0" height="85.3" rx="3" fill="#f43f5e" stroke="#be123c" stroke-width="1"><title>2026-09-14: 96 stockins</title></rect>
+<text x="393.5" y="89.7" font-size="9.5" font-family="system-ui, sans-serif" font-weight="700" fill="#1e293b" text-anchor="middle">96</text>
+<rect x="416.6" y="99.1" width="26.0" height="80.9" rx="3" fill="#f43f5e" stroke="#be123c" stroke-width="1"><title>2026-09-21: 91 stockins</title></rect>
+<text x="429.6" y="94.1" font-size="9.5" font-family="system-ui, sans-serif" font-weight="700" fill="#1e293b" text-anchor="middle">91</text>
+<rect x="452.8" y="124.0" width="26.0" height="56.0" rx="3" fill="#94a3b8" stroke="#64748b" stroke-width="1"><title>2026-09-28: 63 stockins</title></rect>
+<text x="465.8" y="119.0" font-size="9.5" font-family="system-ui, sans-serif" font-weight="700" fill="#1e293b" text-anchor="middle">63</text>
+<rect x="488.9" y="158.7" width="26.0" height="21.3" rx="3" fill="#94a3b8" stroke="#64748b" stroke-width="1"><title>2026-10-05: 24 stockins</title></rect>
+<text x="501.9" y="153.7" font-size="9.5" font-family="system-ui, sans-serif" font-weight="700" fill="#1e293b" text-anchor="middle">24</text>
+        <text x="68.1" y="196.0" font-size="9" font-family="system-ui, sans-serif" fill="#64748b" text-anchor="middle">07-13</text>
+<text x="104.2" y="196.0" font-size="9" font-family="system-ui, sans-serif" fill="#64748b" text-anchor="middle">07-20</text>
+<text x="140.4" y="196.0" font-size="9" font-family="system-ui, sans-serif" fill="#64748b" text-anchor="middle">07-27</text>
+<text x="176.5" y="196.0" font-size="9" font-family="system-ui, sans-serif" fill="#64748b" text-anchor="middle">08-03</text>
+<text x="212.7" y="196.0" font-size="9" font-family="system-ui, sans-serif" fill="#64748b" text-anchor="middle">08-10</text>
+<text x="248.8" y="196.0" font-size="9" font-family="system-ui, sans-serif" fill="#64748b" text-anchor="middle">08-17</text>
+<text x="285.0" y="196.0" font-size="9" font-family="system-ui, sans-serif" fill="#64748b" text-anchor="middle">08-24</text>
+<text x="321.2" y="196.0" font-size="9" font-family="system-ui, sans-serif" fill="#64748b" text-anchor="middle">08-31</text>
+<text x="357.3" y="196.0" font-size="9" font-family="system-ui, sans-serif" fill="#64748b" text-anchor="middle">09-07</text>
+<text x="393.5" y="196.0" font-size="9" font-family="system-ui, sans-serif" fill="#64748b" text-anchor="middle">09-14</text>
+<text x="429.6" y="196.0" font-size="9" font-family="system-ui, sans-serif" fill="#64748b" text-anchor="middle">09-21</text>
+<text x="465.8" y="196.0" font-size="9" font-family="system-ui, sans-serif" fill="#64748b" text-anchor="middle">09-28</text>
+<text x="465.8" y="207.0" font-size="8" font-family="system-ui, sans-serif" font-weight="700" fill="#d97706" text-anchor="middle">Lag*</text>
+<text x="501.9" y="196.0" font-size="9" font-family="system-ui, sans-serif" fill="#64748b" text-anchor="middle">10-05</text>
+<text x="501.9" y="207.0" font-size="8" font-family="system-ui, sans-serif" font-weight="700" fill="#dc2626" text-anchor="middle">4-day</text>
+    </svg>
+    
+            <div style="font-size: 11px; color: #475569; margin-top: 8px;">
+                <span class="caveat-chip">Baseline Statistical Metrics</span>
+                Mean: <strong>120.4/wk</strong> · Std Dev (ddof=1): <strong>10.8</strong> · 
+                Target: <strong>93.5</strong> · Z-Score: <strong>-2.49sigma</strong> 
+                (Statistically Significant (|Z| > 2.0)).
+            </div>
+        </section>
+
+        <!-- Panel 2: Funnel Conversion Stages with Explicit Denominators -->
+        <section class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    Panel 2: Funnel Stage Conversion Rates (Numerator / Denominator)
+                    <span class="panel-subtitle">Calculated on mature cohorts with exact cohort counts displayed</span>
+                </div>
+            </div>
+            
+    <table>
+        <thead>
+            <tr>
+                <th>Funnel Stage / Metric</th>
+                <th>8-Wk Baseline</th>
+                <th>Target Period</th>
+                <th>Delta Rate</th>
+                <th>Primary Owner</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 9px 8px; font-weight: 600; font-size: 12px;">1. Lead Volume</td>
+                <td style="padding: 9px 8px; font-size: 12px;">956.9 leads/wk</td>
+                <td style="padding: 9px 8px; font-size: 12px;">903.0 leads/wk</td>
+                <td style="padding: 9px 8px; font-size: 12px; font-weight: 600; color: #dc2626;">-5.6%</td>
+                <td style="padding: 9px 8px; font-size: 11px; color: #64748b;">Marketing</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 9px 8px; font-weight: 600; font-size: 12px;">2. Inspection Rate</td>
+                <td style="padding: 9px 8px; font-size: 12px;">43.0% (412 / 957)</td>
+                <td style="padding: 9px 8px; font-size: 12px;">42.4% (383 / 903)</td>
+                <td style="padding: 9px 8px; font-size: 12px; font-weight: 600; color: #059669;">-0.6 pts</td>
+                <td style="padding: 9px 8px; font-size: 11px; color: #64748b;">City Ops</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 9px 8px; font-weight: 600; font-size: 12px;">3. Offer Rate</td>
+                <td style="padding: 9px 8px; font-size: 12px;">85.5% (352 / 412)</td>
+                <td style="padding: 9px 8px; font-size: 12px;">84.1% (322 / 383)</td>
+                <td style="padding: 9px 8px; font-size: 12px; font-weight: 600; color: #059669;">-1.4 pts</td>
+                <td style="padding: 9px 8px; font-size: 11px; color: #64748b;">Policy / QC</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #f1f5f9; background-color: #fff1f2;">
+                <td style="padding: 9px 8px; font-weight: 700; font-size: 12px; color: #be123c;">
+                    4. Stockin Rate (Offer Acceptance)
+                </td>
+                <td style="padding: 9px 8px; font-size: 12px;">34.2% (120 / 352)</td>
+                <td style="padding: 9px 8px; font-size: 12px; font-weight: 700; color: #be123c;">
+                    29.0% (94 / 322)
+                </td>
+                <td style="padding: 9px 8px; font-size: 12px; font-weight: 700; color: #be123c;">-5.2 pts</td>
+                <td style="padding: 9px 8px; font-size: 11px; color: #be123c; font-weight: 700;">Pricing Team</td>
+            </tr>
+            <tr>
+                <td style="padding: 9px 8px; font-weight: 700; font-size: 12px;">Overall Lead-to-Stockin Yield</td>
+                <td style="padding: 9px 8px; font-size: 12px;">0.0% (120 / 957)</td>
+                <td style="padding: 9px 8px; font-size: 12px; font-weight: 700;">0.0% (94 / 903)</td>
+                <td style="padding: 9px 8px; font-size: 12px; font-weight: 700; color: #059669;">+0.0 pts</td>
+                <td style="padding: 9px 8px; font-size: 11px; color: #64748b;">End-to-End</td>
+            </tr>
+        </tbody>
+    </table>
+    
+            <div style="font-size: 11px; color: #64748b; margin-top: 8px;">
+                <span class="caveat-chip">Audit Note</span> 
+                Funnel stages reflect lead creation cohorts. Denominators represent the immediately preceding stage.
+            </div>
+        </section>
+
+        <!-- Panel 3: Additive Factor Decomposition -->
+        <section class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    Panel 3: Additive Sequential Stage Decomposition of Pune Stockins
+                    <span class="panel-subtitle">Total Delta: -26.9 stockins/wk vs baseline (120.4). Components sum exactly to delta.</span>
+                </div>
+            </div>
+            
+    <svg viewBox="0 0 540 220" width="100%" height="220" style="overflow: visible;">
+        <line x1="45" y1="28" x2="520" y2="28" stroke="#e2e8f0" stroke-dasharray="3 3"/>
+        <line x1="45" y1="178" x2="520" y2="178" stroke="#cbd5e1" stroke-width="1.5"/>
+        <text x="37" y="182" font-size="10" font-family="system-ui" fill="#94a3b8" text-anchor="end">0</text>
+        <rect x="63.6" y="53.0" width="42.0" height="125.0" rx="3" fill="#3b82f6" stroke="#1e293b" stroke-opacity="0.2"><title>Base: 120.38</title></rect>
+<text x="84.6" y="48.0" font-size="9.5" font-family="system-ui" font-weight="700" fill="#1e293b" text-anchor="middle">120.4</text>
+<text x="84.6" y="194.0" font-size="9" font-family="system-ui" font-weight="600" fill="#475569" text-anchor="middle">Base</text>
+<rect x="142.8" y="53.0" width="42.0" height="7.0" rx="3" fill="#f43f5e" stroke="#1e293b" stroke-opacity="0.2"><title>Leads Vol: -6.78</title></rect>
+<text x="163.8" y="48.0" font-size="9.5" font-family="system-ui" font-weight="700" fill="#1e293b" text-anchor="middle">-6.8</text>
+<text x="163.8" y="194.0" font-size="9" font-family="system-ui" font-weight="600" fill="#475569" text-anchor="middle">Leads Vol</text>
+<rect x="221.9" y="60.0" width="42.0" height="2.0" rx="3" fill="#f43f5e" stroke="#1e293b" stroke-opacity="0.2"><title>Insp Rate: -1.63</title></rect>
+<text x="242.9" y="55.0" font-size="9.5" font-family="system-ui" font-weight="700" fill="#1e293b" text-anchor="middle">-1.6</text>
+<text x="242.9" y="194.0" font-size="9" font-family="system-ui" font-weight="600" fill="#475569" text-anchor="middle">Insp Rate</text>
+<rect x="301.1" y="61.7" width="42.0" height="2.0" rx="3" fill="#f43f5e" stroke="#1e293b" stroke-opacity="0.2"><title>Offer Rate: -1.82</title></rect>
+<text x="322.1" y="56.7" font-size="9.5" font-family="system-ui" font-weight="700" fill="#1e293b" text-anchor="middle">-1.8</text>
+<text x="322.1" y="194.0" font-size="9" font-family="system-ui" font-weight="600" fill="#475569" text-anchor="middle">Offer Rate</text>
+<rect x="380.2" y="63.6" width="42.0" height="17.3" rx="3" fill="#f43f5e" stroke="#1e293b" stroke-opacity="0.2"><title>Stockin Rt: -16.65</title></rect>
+<text x="401.2" y="58.6" font-size="9.5" font-family="system-ui" font-weight="700" fill="#1e293b" text-anchor="middle">-16.6</text>
+<text x="401.2" y="194.0" font-size="9" font-family="system-ui" font-weight="600" fill="#475569" text-anchor="middle">Stockin Rt</text>
+<rect x="459.4" y="80.9" width="42.0" height="97.1" rx="3" fill="#e11d48" stroke="#1e293b" stroke-opacity="0.2"><title>Target: 93.5</title></rect>
+<text x="480.4" y="75.9" font-size="9.5" font-family="system-ui" font-weight="700" fill="#1e293b" text-anchor="middle">93.5</text>
+<text x="480.4" y="194.0" font-size="9" font-family="system-ui" font-weight="600" fill="#475569" text-anchor="middle">Target</text>
+    </svg>
+    
+            
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 14px; margin-top: 10px; font-size: 11.5px;">
+            <div style="display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 4px;">
+                <span>Decomposition Reconciliation:</span>
+                <span style="color: #059669;">Exact Match (Residual = 0.00)</span>
+            </div>
+            <div style="color: #475569;">
+                Leads Vol: <strong>-6.8 (25.2%)</strong> · 
+                Insp Rate: <strong>-1.6 (6.1%)</strong> · 
+                Offer Rate: <strong>-1.8 (6.8%)</strong> · 
+                <span style="color: #be123c; font-weight: 700;">Stockin Rate: -16.6 (61.9%)</span>
+            </div>
+        </div>
+        
+        </section>
+
+        <!-- Panel 4: Ruled-Out Hypotheses (Disputed Claims with Evidence) -->
+        <section class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    Panel 4: Ruled-Out Explanations & Disputed Claims
+                    <span class="panel-subtitle">Evaluating executive claims with direct numerical evidence</span>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Hypothesis / Claim</th>
+                        <th>Observed Values</th>
+                        <th>Impact</th>
+                        <th>Verdict</th>
+                        <th>Mathematical Evidence</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 10px 12px; font-weight: 600; font-size: 12px; color: #0f172a;">
+                Marketing cut spend / Leads tanked<br>
+                <span style="font-weight: 400; font-size: 11px; color: #64748b;">Source: City Ops</span>
+            </td>
+            <td style="padding: 10px 12px; font-size: 11.5px; color: #334155;">
+                Base: 956.9 leads/wk<br>
+                Target: 903.0 leads/wk
+            </td>
+            <td style="padding: 10px 12px; font-weight: 700; font-size: 12px; color: #0f172a; text-align: center;">-6.8 stockins/wk</td>
+            <td style="padding: 10px 12px; text-align: center;">
+                <span style="background-color: #dc262618; color: #dc2626; font-weight: 800; padding: 3px 8px; border-radius: 4px; font-size: 11px;">REFUTED</span>
+            </td>
+            <td style="padding: 10px 12px; font-size: 11.5px; color: #475569;">Leads dipped only 5.6% (within 1.7sigma normal variation; baseline sigma = 32.5 leads/wk). Accounts for only 6.8 stockins/wk. Marketing spend is missing from data.</td>
+        </tr>
+        
+
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 10px 12px; font-weight: 600; font-size: 12px; color: #0f172a;">
+                Inspections are slow / Ops capacity collapsed<br>
+                <span style="font-weight: 400; font-size: 11px; color: #64748b;">Source: Marketing</span>
+            </td>
+            <td style="padding: 10px 12px; font-size: 11.5px; color: #334155;">
+                Base: 43.0% (412 / 957)<br>
+                Target: 42.4% (383 / 903)
+            </td>
+            <td style="padding: 10px 12px; font-weight: 700; font-size: 12px; color: #0f172a; text-align: center;">-1.6 stockins/wk</td>
+            <td style="padding: 10px 12px; text-align: center;">
+                <span style="background-color: #dc262618; color: #dc2626; font-weight: 800; padding: 3px 8px; border-radius: 4px; font-size: 11px;">REFUTED</span>
+            </td>
+            <td style="padding: 10px 12px; font-size: 11.5px; color: #475569;">Mature inspection rates were 44.2% (14 Sep) and 40.6% (21 Sep), averaging 42.4% vs baseline 43.0%. The 7-13 Sep dip (24.8%) was an unbackfilled app logging glitch, not operational slowdown.</td>
+        </tr>
+        
+
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 10px 12px; font-weight: 600; font-size: 12px; color: #0f172a;">
+                Offer Acceptance Collapse (Pricing Spread Widening)<br>
+                <span style="font-weight: 400; font-size: 11px; color: #64748b;">Source: Root Cause Analysis</span>
+            </td>
+            <td style="padding: 10px 12px; font-size: 11.5px; color: #334155;">
+                Base: 34.2% (120 / 352)<br>
+                Target: 29.0% (94 / 322)
+            </td>
+            <td style="padding: 10px 12px; font-weight: 700; font-size: 12px; color: #0f172a; text-align: center;">-16.6 stockins/wk</td>
+            <td style="padding: 10px 12px; text-align: center;">
+                <span style="background-color: #be123c18; color: #be123c; font-weight: 800; padding: 3px 8px; border-radius: 4px; font-size: 11px;">PRIMARY DRIVER (62.0%)</span>
+            </td>
+            <td style="padding: 10px 12px; font-size: 11.5px; color: #475569;">Drove -16.7 stockins lost per week. The pricing spread widened by +14.5% (+₹5,208), as cash offers dropped from 92.5% to 91.6% of seller expectations.</td>
+        </tr>
+        
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Panel 5: Channel Breakdown & Segment Dynamics -->
+        <section class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    Panel 5: Channel Distribution & Volume Breakdown
+                    <span class="panel-subtitle">Comparing baseline vs target channel mix and volume contribution</span>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Channel</th>
+                        <th>Base Share</th>
+                        <th>Target Share</th>
+                        <th>Share Delta</th>
+                        <th style="text-align: right;">Volume Delta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                </tbody>
+            </table>
+            
+        <div style="margin-top: 12px; padding: 10px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 6px; font-size: 11.5px;">
+            <div style="font-weight: 700; color: #be123c; margin-bottom: 4px;">Valuation Gap (Seller Expectation vs Cash Offer):</div>
+            <div>Baseline Spread: <strong>₹46,666</strong> (92.4% offer ratio)</div>
+            <div>Target Spread: <strong style="color: #be123c;">₹51,874</strong> (91.7% offer ratio)</div>
+            <div style="color: #be123c; font-weight: 700; margin-top: 2px;">
+                Spread Widening: +₹5,208 (+11.2%) — offer ratio dropped by -0.8 pts.
+            </div>
+        </div>
+        
+        </section>
+
+        <!-- Panel 6: Validation Gates & Confidence Assessment -->
+        <section class="panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    Panel 6: Audit Gates Run & Confidence Statement
+                    <span class="panel-subtitle">Rigorous analytical gates executed before interpreting business results</span>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Verification Gate</th>
+                        <th style="text-align: center;">Status</th>
+                        <th>Observed Numerical Evidence</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 8px 10px; font-weight: 600; font-size: 12px; color: #1e293b;">Gate 1: Metric Scope Check</td>
+            <td style="padding: 8px 10px; text-align: center;"><span style="background-color: #05966918; color: #059669; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px;">PASSED</span></td>
+            <td style="padding: 8px 10px; font-size: 11.5px; color: #475569;">Metric 'stockins' is a valid seller funnel metric.</td>
+        </tr>
+        
+
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 8px 10px; font-weight: 600; font-size: 12px; color: #1e293b;">Gate 2: Temporal Completeness Check</td>
+            <td style="padding: 8px 10px; text-align: center;"><span style="background-color: #05966918; color: #059669; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px;">PASSED</span></td>
+            <td style="padding: 8px 10px; font-size: 11.5px; color: #475569;">All target weeks contain a complete 7-day operating cycle.</td>
+        </tr>
+        
+
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 8px 10px; font-weight: 600; font-size: 12px; color: #1e293b;">Gate 3: Cohort Maturity Check</td>
+            <td style="padding: 8px 10px; text-align: center;"><span style="background-color: #05966918; color: #059669; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px;">PASSED</span></td>
+            <td style="padding: 8px 10px; font-size: 11.5px; color: #475569;">All target cohorts are >= 14 days old and fully mature.</td>
+        </tr>
+        
+
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 8px 10px; font-weight: 600; font-size: 12px; color: #1e293b;">Gate 4: Data Logging Anomaly Check</td>
+            <td style="padding: 8px 10px; text-align: center;"><span style="background-color: #05966918; color: #059669; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px;">PASSED</span></td>
+            <td style="padding: 8px 10px; font-size: 11.5px; color: #475569;">No funnel logic violations (offers <= inspections) detected.</td>
+        </tr>
+        
+
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+            <td style="padding: 8px 10px; font-weight: 600; font-size: 12px; color: #1e293b;">Gate 5: Statistical Significance Check</td>
+            <td style="padding: 8px 10px; text-align: center;"><span style="background-color: #dc262618; color: #dc2626; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px;">REFUSED</span></td>
+            <td style="padding: 8px 10px; font-size: 11.5px; color: #475569;">Observed 93.5 vs baseline 120.4 (Z = -2.49, -22.3%). Movement is statistically significant (>2σ or >15%).</td>
+        </tr>
+        
+                </tbody>
+            </table>
+            <div style="margin-top: 10px; padding: 10px; background: #f8fafc; border-radius: 6px; font-size: 11.5px;">
+                <strong>Confidence Rating:</strong> <span style="color: #059669; font-weight: 700;">HIGH on location of loss (Offer Acceptance stage accounts for 62.0% of delta)</span><br>
+                <span style="color: #475569;">HIGH on location of loss (Offer Acceptance stage accounts for 62.0% of delta); MODERATE on causal pricing policy (external competitor pricing data missing).</span><br>
+                <span style="color: #d97706; font-weight: 600;">What would change this:</span> <span style="color: #475569;">Competitor pricing benchmarks, inspector schedule logs, or marketing spend data.</span>
+            </div>
+        </section>
+
+        <!-- Full-Width Panel: Strategic Recommendations -->
+        <section class="panel panel-full">
+            <div class="panel-header">
+                <div class="panel-title">
+                    Strategic Recommendations & Action Plan
+                    <span class="panel-subtitle">Evidence-based operational guidance for business leadership</span>
+                </div>
+            </div>
+            <ul style="padding-left: 20px; font-size: 12.5px; color: #1e293b;">
+                <li style="margin-bottom: 4px;">Re-align pricing algorithms for Pune, particularly in the 4-6y car age band where expectation spreads widened most.</li>
+<li style="margin-bottom: 4px;">Do not penalize Ops inspectors; inspection rates operated normally at 41%–44%.</li>
+<li style="margin-bottom: 4px;">Do not arbitrarily inflate marketing spend without price acceptance recovery.</li>
+<li style="margin-bottom: 4px;">Do not treat immature cohorts (28 Sep and 5 Oct) as operational crises.</li>
+            </ul>
+        </section>
+
+    </main>
+
+    <!-- Missing Evidence & Methodology Footer -->
+    <footer class="footer">
+        <div>
+            <strong>Missing Dimensions in Dataset:</strong> Marketing spend, campaign launch dates, inspector headcount, and retail buyer deliveries are absent. Attribution to these levers without external corroboration is methodologically invalid.
+        </div>
+        <div>
+            <strong>Antigravity BI Engine</strong> · Fully Reconciled Additive Model · Offline Standalone Readout
+        </div>
+    </footer>
+</div>
+
+</body>
+</html>

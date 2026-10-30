@@ -102,7 +102,7 @@ def decompose_funnel_stages(df, city, baseline_weeks, target_weeks):
         }
     }
 
-def decompose_by_segment(df, city, baseline_weeks, target_weeks, segment_col="channel"):
+def decompose_by_segment(df, city, baseline_weeks, target_weeks, segment_col="channel", metric_col="stockins"):
     """
     Decomposes total change in metric by categorical segment (e.g., channel or car_age_band).
     Reconciles exact segment sum to aggregate delta.
@@ -113,20 +113,22 @@ def decompose_by_segment(df, city, baseline_weeks, target_weeks, segment_col="ch
     b_n = len(baseline_weeks)
     t_n = len(target_weeks)
     
-    b_seg = b_df.groupby(segment_col)["stockins"].sum() / b_n
-    t_seg = t_df.groupby(segment_col)["stockins"].sum() / t_n
+    b_seg = b_df.groupby(segment_col)[metric_col].sum() / b_n
+    t_seg = t_df.groupby(segment_col)[metric_col].sum() / t_n
     
     all_segs = sorted(list(set(b_seg.index).union(set(t_seg.index))))
     
     segment_results = []
     total_delta = 0.0
     
+    agg_delta = (t_df[metric_col].sum()/t_n - b_df[metric_col].sum()/b_n)
+    
     for seg in all_segs:
         b_val = b_seg.get(seg, 0.0)
         t_val = t_seg.get(seg, 0.0)
         delta = t_val - b_val
         total_delta += delta
-        pct_contrib = (delta / (t_df["stockins"].sum()/t_n - b_df["stockins"].sum()/b_n)) * 100 if (t_df["stockins"].sum()/t_n - b_df["stockins"].sum()/b_n) != 0 else 0
+        pct_contrib = (delta / agg_delta) * 100 if agg_delta != 0 else 0
         segment_results.append({
             "segment": seg,
             "baseline_avg": round(b_val, 2),
@@ -136,9 +138,10 @@ def decompose_by_segment(df, city, baseline_weeks, target_weeks, segment_col="ch
         })
         
     return {
+        "metric": metric_col,
         "segment_dimension": segment_col,
         "segments": segment_results,
         "sum_of_segment_deltas": round(total_delta, 2),
-        "actual_aggregate_delta": round(t_df["stockins"].sum()/t_n - b_df["stockins"].sum()/b_n, 2),
-        "reconciled": abs(total_delta - (t_df["stockins"].sum()/t_n - b_df["stockins"].sum()/b_n)) < 1e-4
+        "actual_aggregate_delta": round(agg_delta, 2),
+        "reconciled": abs(total_delta - agg_delta) < 1e-4
     }

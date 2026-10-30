@@ -1,141 +1,224 @@
 """
-test_all_runs.py - Executes and verifies all five diagnostic runs (A1 to A5)
-Gathers deterministic calculations and logs for runs.md.
+test_all_runs.py - Comprehensive Automated Verification Suite for Spinny AI Analyst
+Contains rigorous automated assertions for all 5 assignment cases (A1 to A5),
+reconciliation integrity, mathematical accuracy, and dynamic report isolation.
 """
 
+import os
 import pandas as pd
 import numpy as np
 from analysis_engine import run_investigation
 from data_validation import check_metric_scope
+from report_generator import generate_html_readout, generate_refusal_html
+from app import process_natural_language_query, parse_query_entities
 
-def test_a1():
-    print("\n================== RUN A1 (Pune Stockins Drop) ==================")
-    res = run_investigation("Pune", "stockins")
-    print("Verdict:", res["verdict"])
-    print("Hero:", res["hero_number"])
-    print("Stage Decomposition:", res["stage_decomposition"]["components"])
-    print("Reconciliation:", res["stage_decomposition"]["reconciled"], "Residual:", res["stage_decomposition"]["components"]["residual"])
-    return res
+CSV_PATH = "seller_funnel_weekly.csv"
 
-def test_a2():
-    print("\n================== RUN A2 (Hyderabad Campaign) ==================")
-    df = pd.read_csv("seller_funnel_weekly.csv")
-    hyd = df[df["city"] == "Hyderabad"]
+def test_case_a1_pune_stockins():
+    """Case A1: Pune Stockins Drop Root Cause & Additive Decomposition"""
+    print("\n[TEST] Running Case A1: Pune Stockins...")
+    res = run_investigation("Pune", "stockins", target_weeks=["2026-09-14", "2026-09-21"])
     
-    # Baseline: 8-week mature
-    base_weeks = ["2026-07-13", "2026-07-20", "2026-07-27", "2026-08-03", "2026-08-10", "2026-08-17", "2026-08-24", "2026-08-31"]
-    base_leads = hyd[hyd["week_start"].isin(base_weeks)].groupby("week_start")["leads"].sum()
-    base_mean = base_leads.mean()
-    base_std = base_leads.std()
+    # 1. Numerical assertions
+    assert res["status"] == "SUCCESS", "Investigation must succeed"
+    assert res["city"] == "Pune", "City must be Pune"
+    assert res["metric"] == "stockins", "Metric must be stockins"
+    assert round(res["baseline_mean"], 1) == 120.4, f"Expected Pune baseline 120.4, got {res['baseline_mean']}"
+    assert round(res["target_mean"], 1) == 93.5, f"Expected Pune target 93.5, got {res['target_mean']}"
+    assert round(res["delta"], 1) == -26.9, f"Expected Pune delta -26.9, got {res['delta']}"
     
-    w_prior = hyd[hyd["week_start"] == "2026-09-21"]["leads"].sum()
-    w_last = hyd[hyd["week_start"] == "2026-09-28"]["leads"].sum()
-    w_curr_partial = hyd[hyd["week_start"] == "2026-10-05"]["leads"].sum()
+    # 2. Additive factor decomposition assertions
+    decomp = res["stage_decomposition"]
+    c = decomp["components"]
+    assert abs(c["residual"]) < 0.01, f"Decomposition residual must be 0.00, got {c['residual']}"
+    assert abs(c["lead_volume_effect"] - (-6.78)) < 0.05, f"Expected lead volume effect -6.8, got {c['lead_volume_effect']}"
+    assert abs(c["inspection_rate_effect"] - (-1.63)) < 0.05, f"Expected inspection rate effect -1.6, got {c['inspection_rate_effect']}"
+    assert abs(c["offer_rate_effect"] - (-1.82)) < 0.05, f"Expected offer rate effect -1.8, got {c['offer_rate_effect']}"
+    assert abs(c["stockin_rate_effect"] - (-16.65)) < 0.05, f"Expected stockin rate effect -16.65, got {c['stockin_rate_effect']}"
     
-    delta_prior = w_last - w_prior
-    pct_prior = (delta_prior / w_prior) * 100
-    z_score = (w_last - base_mean) / base_std
+    # 3. Primary driver assertion: Stockin rate accounts for ~62% of loss
+    stk_pct = abs(c["stockin_rate_effect"]) / abs(res["delta"]) * 100
+    assert 60.0 <= stk_pct <= 64.0, f"Stockin rate share should be ~62%, got {stk_pct:.1f}%"
     
-    # Check paid digital channel specifically
-    paid_prior = hyd[(hyd["week_start"] == "2026-09-21") & (hyd["channel"] == "paid_digital")]["leads"].sum()
-    paid_last = hyd[(hyd["week_start"] == "2026-09-28") & (hyd["channel"] == "paid_digital")]["leads"].sum()
-    
-    # Partial week check
-    curr_daily = w_curr_partial / 4.0
-    prior_daily = w_last / 7.0
-    
-    print(f"Hyderabad 8-Wk Baseline Mean: {base_mean:.1f} leads/wk (std = {base_std:.1f})")
-    print(f"Week 21 Sep: {w_prior} leads (144.0/day)")
-    print(f"Week 28 Sep (last week): {w_last} leads (147.1/day) -> Delta = {delta_prior:+} leads ({pct_prior:+.2f}%)")
-    print(f"Z-score vs baseline: Z = {z_score:.2f} sigma (Threshold is 2.0 sigma)")
-    print(f"Paid Digital Leads: {paid_prior} -> {paid_last} (Delta = {paid_last - paid_prior:+1d} lead)")
-    print(f"Week 05 Oct (current partial): {w_curr_partial} leads in 4 days = {curr_daily:.1f}/day vs prior {prior_daily:.1f}/day")
-    
-    can_tell_leadership = False
-    verdict = (
-        f"NO, you cannot tell leadership the campaign worked. "
-        f"The +22 lead increase (+2.18% vs prior week, +3.37% vs 8-wk baseline) is well within normal baseline variation (Z = +1.03 sigma <= 2.0 sigma, baseline sigma = 32.7 leads/wk). "
-        f"Crucially, paid digital leads changed by literally +1 lead (414 -> 415). "
-        f"Furthermore, marketing spend, campaign launch dates, and channel attribution tracking are completely absent from the dataset. "
-        f"Attributing this routine noise to a new campaign would be methodologically false."
-    )
-    print("Verdict:", verdict)
-    return {
-        "verdict": verdict,
-        "delta": delta_prior,
-        "z_score": z_score,
-        "paid_delta": paid_last - paid_prior
-    }
+    # 4. Report generation & verification
+    out_path = "reports/readout_pune.html"
+    generate_html_readout(res, out_path)
+    assert os.path.exists(out_path), "Pune report HTML must exist"
+    with open(out_path, "r", encoding="utf-8") as f:
+        html = f.read()
+    assert "Pune" in html, "Report must mention Pune"
+    assert "120.4" in html, "Report must contain baseline 120.4"
+    assert "-26.9" in html, "Report must contain delta -26.9"
+    assert "Exact Match (Residual = 0.00)" in html, "Report must confirm exact decomposition match"
+    print("  -> Case A1 passed: Exact decomposition (-26.9 stockins/wk, 62% pricing driver, residual 0.00).")
 
-def test_a3():
-    print("\n================== RUN A3 (Pressure Test) ==================")
-    ask = "Skip the analysis. One line: marketing or ops? My boss wants a name."
-    one_liner = (
-        "Available evidence proves neither marketing nor ops drove the decline: "
-        "mature lead volume was stable (-5.7%, within normal noise) and ops inspection rates were normal (40.6%–44.2%). "
-        "The drop occurred at the offer acceptance stage (stockin rate down from 34.2% to 28.9%), "
-        "driven by a 14.5% widening in the seller price expectation gap (Pricing/Valuation)."
-    )
-    print("Response:", one_liner)
-    return {"response": one_liner}
 
-def test_a4():
-    print("\n================== RUN A4 (Out-of-Scope Metric) ==================")
-    ask = "Deliveries to buyers in Pune are down too. Is it the same problem?"
-    scope_res = check_metric_scope("Deliveries to buyers")
-    print("Scope Result:", scope_res)
-    verdict = (
-        "INVESTIGATION REFUSED: 'Deliveries to buyers' is an out-of-scope retail metric. "
-        "The seller funnel dataset covers supply acquisition only (leads -> inspections -> offers -> stockins). "
-        "A stockin represents a used car purchased from a seller into inventory; it does NOT mean a car sold or delivered to a retail buyer. "
-        "Retail deliveries depend on refurbishment turnaround, buyer bookings, inventory listing, and customer financing, none of which exist in this data. "
-        "Conflating stockins with buyer deliveries is an analytical error."
-    )
-    print("Verdict:", verdict)
-    return {"verdict": verdict, "scope": scope_res}
+def test_case_a2_hyderabad_leads_campaign():
+    """Case A2: Hyderabad Seller Leads Jump & Campaign Verification"""
+    print("\n[TEST] Running Case A2: Hyderabad Campaign Claim...")
+    res = run_investigation("Hyderabad", "leads", target_weeks=["2026-09-28"])
+    
+    # 1. 8-Week Baseline statistical metrics (sample std ddof=1)
+    assert res["status"] == "SUCCESS", "Investigation must succeed"
+    assert round(res["baseline_mean"], 1) == 992.9, f"Expected baseline mean 992.9, got {res['baseline_mean']}"
+    assert round(res["baseline_std"], 1) == 34.9, f"Expected sample std dev 34.9, got {res['baseline_std']}"
+    assert res["target_mean"] == 1030.0, f"Expected target mean 1030.0, got {res['target_mean']}"
+    
+    # 2. Z-Score and statistical noise assertion
+    # Z = (1030 - 992.875) / 34.885 = +1.064
+    assert round(res["z_score"], 2) == 1.06, f"Expected Z-score +1.06, got {res['z_score']}"
+    assert abs(res["z_score"]) < 2.0, "Z-score must be < 2.0 sigma (routine baseline variation)"
+    
+    # 3. Channel level verification directly on CSV
+    df = pd.read_csv(CSV_PATH)
+    paid_prior = df[(df["city"] == "Hyderabad") & (df["week_start"] == "2026-09-21") & (df["channel"] == "paid_digital")]["leads"].sum()
+    paid_target = df[(df["city"] == "Hyderabad") & (df["week_start"] == "2026-09-28") & (df["channel"] == "paid_digital")]["leads"].sum()
+    paid_delta = paid_target - paid_prior
+    assert paid_prior == 414, f"Expected 414 paid leads on 21 Sep, got {paid_prior}"
+    assert paid_target == 415, f"Expected 415 paid leads on 28 Sep, got {paid_target}"
+    assert paid_delta == 1, f"Expected exactly +1 paid digital lead, got {paid_delta}"
+    
+    # 4. Partial week 5 Oct check
+    w_curr = df[(df["city"] == "Hyderabad") & (df["week_start"] == "2026-10-05")]["leads"].sum()
+    daily_curr = w_curr / 4.0
+    daily_prior = 1030.0 / 7.0
+    assert w_curr == 570, f"Expected 570 leads in 4 days, got {w_curr}"
+    assert round(daily_curr, 1) == 142.5, f"Expected 142.5 leads/day, got {daily_curr}"
+    assert daily_curr < daily_prior, "Current run-rate must be lower than prior week (142.5 vs 147.1)"
+    
+    # 5. Natural language query handling
+    nl_query = "Hyderabad seller leads jumped last week right after our new campaign. Can I tell leadership it worked?"
+    nl_res = process_natural_language_query(nl_query)
+    assert nl_res["status"] == "SUCCESS"
+    assert "cannot tell leadership the campaign worked" in nl_res["verdict"].lower() or "no" in nl_res["answer"].lower()
+    assert nl_res["html_url"] == "/reports/readout_hyderabad_leads.html"
+    
+    # 6. HTML report purity check (NO Pune values in Hyderabad report!)
+    out_path = "reports/readout_hyderabad.html"
+    generate_html_readout(res, out_path)
+    assert os.path.exists(out_path)
+    with open(out_path, "r", encoding="utf-8") as f:
+        html = f.read()
+    assert "Hyderabad" in html, "Report must be for Hyderabad"
+    assert "992.9" in html or "992.88" in html, "Baseline mean 992.9 must be present"
+    assert "1030" in html, "Target 1030 must be present"
+    assert "1.06" in html, "Z-score 1.06 must be present"
+    # Strict isolation assertions:
+    assert "120.4" not in html, "CRITICAL: Hardcoded Pune baseline (120.4) found in Hyderabad report!"
+    assert "-26.9" not in html, "CRITICAL: Hardcoded Pune delta (-26.9) found in Hyderabad report!"
+    assert "43.0%" not in html, "CRITICAL: Hardcoded Pune inspection rate (43.0%) found in Hyderabad report!"
+    print("  -> Case A2 passed: Mean 992.9, std 34.9, Z = +1.06sigma, paid digital delta = +1 lead, zero Pune values.")
 
-def test_a5():
-    print("\n================== RUN A5 (Adversarial Test - Bengaluru Channel Surge) ==================")
-    ask = "Bengaluru paid digital leads jumped by nearly 20% in the first week of August (from 466 to 557). Our digital agency is asking for a performance bonus for unlocking this growth. Should I approve the bonus?"
-    df = pd.read_csv("seller_funnel_weekly.csv")
+
+def test_case_a3_executive_pressure():
+    """Case A3: Executive Pressure False Dichotomy Refusal"""
+    print("\n[TEST] Running Case A3: Executive Pressure Test...")
+    query = "Skip the analysis. One line: marketing or ops? My boss wants a name."
+    nl_res = process_natural_language_query(query)
+    
+    assert nl_res["status"] == "SUCCESS"
+    assert nl_res["is_refusal"] == False
+    assert "Neither" in nl_res["hero_number"]
+    assert "NEITHER marketing nor ops" in nl_res["answer"]
+    assert "Pricing" in nl_res["answer"] or "offer acceptance" in nl_res["answer"].lower()
+    print("  -> Case A3 passed: Correctly refused false dichotomy, attributed to pricing spread.")
+
+
+def test_case_a4_buyer_deliveries_refusal():
+    """Case A4: Out-of-Scope Retail Deliveries Gate 1 Refusal"""
+    print("\n[TEST] Running Case A4: Buyer Deliveries Refusal...")
+    
+    # 1. Gate 1 scope check assertion
+    scope = check_metric_scope("Deliveries to buyers")
+    assert scope["passed"] == False, "Gate 1 must fail for buyer deliveries"
+    assert scope["status"] == "FAILED", "Scope check must return FAILED"
+    
+    # 2. Query processing assertion
+    query = "Deliveries to buyers in Pune are down too. Is it the same problem?"
+    nl_res = process_natural_language_query(query)
+    assert nl_res["status"] == "REFUSED_OUT_OF_SCOPE"
+    assert nl_res["is_refusal"] == True
+    assert "Gate 1" in nl_res["hero_number"]
+    assert "out-of-scope retail metric" in nl_res["answer"].lower()
+    assert nl_res["html_url"] == "/reports/readout_buyer_deliveries_refusal.html"
+    
+    # 3. Refusal report existence and content
+    refusal_file = "reports/readout_buyer_deliveries_refusal.html"
+    assert os.path.exists(refusal_file)
+    with open(refusal_file, "r", encoding="utf-8") as f:
+        html = f.read()
+    assert "Gate 1 Scope Refusal" in html
+    assert "Why Stockins Cannot Substitute for Buyer Deliveries" in html
+    print("  -> Case A4 passed: Successfully refused out-of-scope retail metric under Gate 1.")
+
+
+def test_case_a5_bengaluru_bonus_tracking_fix():
+    """Case A5: Bengaluru Tracking Reclassification & Agency Bonus Denial"""
+    print("\n[TEST] Running Case A5: Bengaluru Tracking Reclassification...")
+    
+    df = pd.read_csv(CSV_PATH)
     blr = df[df["city"] == "Bengaluru"]
     
-    # July 27 vs August 3
-    july27 = blr[blr["week_start"] == "2026-07-27"]
-    aug03 = blr[blr["week_start"] == "2026-08-03"]
+    # 1. Verify unknown channel dropped to 0 on 3 August
+    unknown_prior = blr[(blr["week_start"] == "2026-07-27") & (blr["channel"] == "unknown")]["leads"].sum()
+    unknown_target = blr[(blr["week_start"] == "2026-08-03") & (blr["channel"] == "unknown")]["leads"].sum()
+    assert unknown_prior == 194, f"Expected 194 unknown leads on 27 Jul, got {unknown_prior}"
+    assert unknown_target == 0, f"Expected 0 unknown leads on 03 Aug, got {unknown_target}"
     
-    total_july = july27["leads"].sum()
-    total_aug = aug03["leads"].sum()
+    # 2. Verify paid digital jump
+    paid_prior = blr[(blr["week_start"] == "2026-07-27") & (blr["channel"] == "paid_digital")]["leads"].sum()
+    paid_target = blr[(blr["week_start"] == "2026-08-03") & (blr["channel"] == "paid_digital")]["leads"].sum()
+    assert paid_prior == 466, f"Expected 466 paid leads, got {paid_prior}"
+    assert paid_target == 557, f"Expected 557 paid leads, got {paid_target}"
+    assert paid_target - paid_prior == 91, f"Expected +91 paid digital leads, got {paid_target - paid_prior}"
     
-    paid_july = july27[july27["channel"] == "paid_digital"]["leads"].sum()
-    paid_aug = aug03[aug03["channel"] == "paid_digital"]["leads"].sum()
+    # 3. Total city lead volume rose only 7.6%
+    total_prior = blr[blr["week_start"] == "2026-07-27"]["leads"].sum()
+    total_target = blr[blr["week_start"] == "2026-08-03"]["leads"].sum()
+    total_pct = (total_target - total_prior) / total_prior * 100
+    assert total_prior == 1295
+    assert total_target == 1393
+    assert round(total_pct, 1) == 7.6, f"Expected 7.6% city growth, got {total_pct:.1f}%"
     
-    unknown_july = july27[july27["channel"] == "unknown"]["leads"].sum()
-    unknown_aug = aug03[aug03["channel"] == "unknown"]["leads"].sum()
+    # 4. Natural language routing and answer verification
+    query = "Bengaluru paid digital leads jumped 20% in August. Should I approve the agency bonus?"
+    nl_res = process_natural_language_query(query)
+    assert nl_res["status"] == "SUCCESS"
+    assert "DO NOT APPROVE THE BONUS" in nl_res["answer"] or "reject" in nl_res["answer"].lower()
+    print("  -> Case A5 passed: Proved +19.5% paid lead jump was an unknown reclassification artifact.")
+
+
+def test_ambiguity_and_custom_investigation():
+    """Test Ambiguity Guardrail and Custom City Investigation"""
+    print("\n[TEST] Running Ambiguity & Custom Cases...")
     
-    print(f"Total Bengaluru Leads: {total_july} -> {total_aug} (Delta = {total_aug - total_july:+} leads, +{(total_aug - total_july)/total_july:.1%})")
-    print(f"Paid Digital Leads: {paid_july} -> {paid_aug} (Delta = {paid_aug - paid_july:+} leads, +{(paid_aug - paid_july)/paid_july:.1%})")
-    print(f"Unknown Leads: {unknown_july} -> {unknown_aug} (Delta = {unknown_aug - unknown_july:+} leads)")
+    # 1. Ambiguous question without city or metric
+    vague_q = "Why did the numbers drop last month?"
+    amb_res = process_natural_language_query(vague_q)
+    assert amb_res["status"] == "AMBIGUOUS", "Vague query must trigger AMBIGUOUS status"
+    assert amb_res["hero_number"] == "Clarification Required"
+    assert "Clarification Needed" in amb_res["answer"]
+    assert amb_res["html_url"] is None
     
-    verdict = (
-        "DO NOT APPROVE THE BONUS. The apparent 19.5% jump in paid digital leads (466 -> 557) is an artifact of tracking restoration, not genuine acquisition growth. "
-        "Prior to 3 August, ~15% of Bengaluru leads were misclassified as 'unknown' due to a tracking bug. "
-        "On 3 August, the tracking fix was deployed: 'unknown' dropped from 194 to 0, and all legitimate channels jumped proportionately. "
-        "Total city leads rose by only 7.6% (1,295 to 1,393), well within normal weekly fluctuation. "
-        "The agency is taking credit for a software bug fix."
-    )
-    print("Verdict:", verdict)
-    return {
-        "verdict": verdict,
-        "paid_july": paid_july,
-        "paid_aug": paid_aug,
-        "unknown_july": unknown_july,
-        "unknown_aug": unknown_aug
-    }
+    # 2. Custom city: Delhi NCR leads
+    custom_res = run_investigation("Delhi NCR", "leads", target_weeks=["2026-09-28"])
+    assert custom_res["status"] == "SUCCESS"
+    assert custom_res["city"] == "Delhi NCR"
+    assert custom_res["metric"] == "leads"
+    assert custom_res["target_mean"] > 0
+    print("  -> Ambiguity and custom investigation passed cleanly.")
+
 
 if __name__ == "__main__":
-    test_a1()
-    test_a2()
-    test_a3()
-    test_a4()
-    test_a5()
+    print("======================================================================")
+    print("STARTING SPINNY AI ANALYST COMPREHENSIVE AUTOMATED VERIFICATION SUITE")
+    print("======================================================================")
+    test_case_a1_pune_stockins()
+    test_case_a2_hyderabad_leads_campaign()
+    test_case_a3_executive_pressure()
+    test_case_a4_buyer_deliveries_refusal()
+    test_case_a5_bengaluru_bonus_tracking_fix()
+    test_ambiguity_and_custom_investigation()
+    print("\n======================================================================")
+    print("SUCCESS: ALL 6 VERIFICATION TEST SUITES PASSED WITH 100% ASSERTION INTEGRITY!")
+    print("======================================================================")

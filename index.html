@@ -353,7 +353,8 @@
                 
                 <div class="ai-action-bar">
                     <button class="btn-view-analysis" onclick="scrollToAnalysis()">📊 Scroll to Full HTML Analysis</button>
-                    <a id="btnNewTab" href="/readout_v2.html" target="_blank" class="btn-open-newtab">Open Full Report in New Tab &rarr;</a>
+                    <a id="btnNewTab" href="/reports/readout_pune.html" target="_blank" class="btn-open-newtab">Open Full Report in New Tab &rarr;</a>
+                    <a id="btnDownload" href="/reports/readout_pune.html" download="spinny_diagnostic_report.html" class="btn-open-newtab" style="background: #2563eb; color: #ffffff; border-color: #2563eb; font-weight: 700;">📥 Download HTML Report</a>
                 </div>
             </div>
         </div>
@@ -410,11 +411,19 @@
                 const response = await fetch(`/api/ask?q=${encodeURIComponent(query)}`);
                 const data = await response.json();
 
-                // Format markdown text to clean HTML breaks
-                const formattedAnswer = data.answer
+                // Format markdown text to clean HTML breaks & clickable links
+                let formattedAnswer = data.answer
                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                     .replace(/•/g, '&bull;')
                     .replace(/➔/g, '&rarr;');
+
+                // Make clickable queries in answer text
+                formattedAnswer = formattedAnswer.replace(/'(.*?)'/g, (match, p1) => {
+                    if (p1.includes('Pune') || p1.includes('Hyderabad') || p1.includes('Bengaluru') || p1.includes('Delhi')) {
+                        return `<a href="javascript:void(0)" onclick="setQuery('${p1.replace(/'/g, "\\'")}')" style="color: #2563eb; font-weight: 600; text-decoration: underline;">${p1}</a>`;
+                    }
+                    return match;
+                });
 
                 answerDiv.innerHTML = formattedAnswer;
                 heroSpan.innerText = data.hero_number || 'Complete';
@@ -422,6 +431,17 @@
                 if (data.html_url) {
                     document.getElementById('reportFrame').src = data.html_url;
                     document.getElementById('btnNewTab').href = data.html_url;
+                    const btnDl = document.getElementById('btnDownload');
+                    if (btnDl) {
+                        btnDl.href = data.html_url;
+                        const fname = data.html_url.split('/').pop() || 'spinny_diagnostic_report.html';
+                        btnDl.setAttribute('download', fname);
+                        btnDl.style.display = 'inline-flex';
+                    }
+                    document.getElementById('previewTitle').innerText = `${data.city || 'Investigation'} Diagnostic Readout (${data.metric || 'Funnel'})`;
+                } else {
+                    const btnDl = document.getElementById('btnDownload');
+                    if (btnDl) btnDl.style.display = 'none';
                 }
             } catch (err) {
                 console.error(err);
