@@ -1,15 +1,15 @@
 # Spinny Applied AI Take-Home Assignment Submission
 
-This folder contains the complete, official submission deliverables specified in **Section 6 ("What to send")** of `01_CANDIDATE_BRIEF.md`.
+This folder contains the complete, official submission deliverables specified in **Section 6 ("What to send")** of `01_CANDIDATE_BRIEF.md`, along with the execution engine so evaluators can run and test everything out of the box.
 
 ---
 
-## Deliverables Mapping (§6 Candidate Brief)
+## 1. Candidate Brief §6 Deliverables Mapping
 
 | # | Item from Brief | File in This Folder | Description |
 | :-: | :--- | :--- | :--- |
 | **1** | `skill.md` | [`skill.md`](skill.md) | Reusable 2-page investigation skill answering *"Why did this metric move?"* across any city, metric, and period. |
-| **2** | `readout_baseline.html` | [`readout_baseline.html`](readout_baseline.html) | Readout produced with **no skill** (the baseline to beat). |
+| **2** | `readout_baseline.html` | [`readout_baseline.html`](readout_baseline.html) | Readout produced with **no skill** (the benchmark to beat). |
 | **2** | `readout_v1.html` | [`readout_v1.html`](readout_v1.html) | Readout produced with **skill v1** unedited. |
 | **2** | `readout_v2.html` | [`readout_v2.html`](readout_v2.html) | Final, perfected HTML readout complying with all §4 standards (30-sec verdict, denominators, waterfall, zero residual). |
 | **3** | `critique.md` | [`critique.md`](critique.md) | 10 named defects identified on v1, and the complete audit of changes applied in v2. |
@@ -20,13 +20,41 @@ This folder contains the complete, official submission deliverables specified in
 
 ---
 
-## Companion Reference Files Included
+## 2. How to Run and Verify the Submission
+
+All source files are included directly in this folder. Zero external packages are needed (only standard library + pandas/numpy).
+
+### A. Run Automated Assertions (All 5 Cases)
+To verify all calculations, $Z$-scores, factor decompositions, and report isolation:
+```bash
+python test_all_runs.py
+```
+*Expected result:* All 6 test suites pass with 100% assertion integrity.
+
+### B. Launch Live Interactive Web Server
+To interactively ask business questions, view live iframe previews, and download reports:
+```bash
+python app.py
+```
+Then open your browser at **`http://127.0.0.1:8000`**.
+
+### C. Open Standalone HTML Reports Offline
+Double-click and open any of the following files directly in any web browser (zero CDN / zero internet required):
+- `readout_v2.html` (Official A1 Pune stockin investigation)
+- `readout_v1.html` (Skill v1 output)
+- `readout_baseline.html` (Baseline unassisted output)
+- `reports/readout_hyderabad.html` (Case A2 campaign investigation)
+- `reports/readout_buyer_deliveries_refusal.html` (Case A4 Gate 1 refusal)
+- `reports/readout_bengaluru_leads.html` (Case A5 agency bonus reclassification)
+
+---
+
+## 3. Companion Reference Files
 - **`seller_funnel_weekly.csv`**: Official weekly seller funnel dataset (660 rows).
 - **`DATA_NOTES.md`**: Official schema definitions, known logging glitches, and cohort maturity notes.
 
 ---
 
-## Live Repository
-The complete source code, test suite, and interactive agent are version-controlled at:  
+## 4. Live Repository
+The complete project history, transcripts, and commit log are hosted at:  
 👉 **https://github.com/Janakrajgo/ai_analyst**
-
