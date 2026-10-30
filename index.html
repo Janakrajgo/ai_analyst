@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spinny Applied AI Analyst — Interactive Live Investigation</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --primary-accent: #2563eb;
+            --surface: #ffffff;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --success: #059669;
+            --danger: #e11d48;
+            --warning: #d97706;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+        /* Top Navigation Bar */
+        .navbar {
+            background: #0f172a;
+            color: #ffffff;
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #2563eb;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-brand {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-badge {
+            background: rgba(37, 99, 235, 0.3);
+            border: 1px solid #3b82f6;
+            color: #93c5fd;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .nav-links {
+            display: flex;
+            gap: 12px;
+        }
+        .btn-link {
+            text-decoration: none;
+            color: #cbd5e1;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-link:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #3b82f6;
+        }
+        .btn-link.primary {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #2563eb;
+        }
+        .btn-link.primary:hover {
+            background: #1d4ed8;
+        }
+        /* Header Hero */
+        .hero-section {
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            padding: 36px 28px;
+            text-align: center;
+        }
+        .hero-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+        .hero-subtitle {
+            font-size: 15px;
+            color: #94a3b8;
+            max-width: 750px;
+            margin: 0 auto 20px auto;
+        }
+        /* Interactive AI Ask Box */
+        .ai-chat-box {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            text-align: left;
+        }
+        .chat-input-row {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 14px 18px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            color: #0f172a;
+            background: #ffffff;
+        }
+        .chat-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        .chat-submit-btn {
+            background: #2563eb;
+            color: #ffffff;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            white-space: nowrap;
+        }
+        .chat-submit-btn:hover {
+            background: #1d4ed8;
+        }
+        .suggestions-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 14px;
+            align-items: center;
+        }
+        .sugg-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-right: 4px;
+        }
+        .sugg-pill {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #f1f5f9;
+            font-size: 12px;
+            padding: 5px 12px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .sugg-pill:hover {
+            background: #2563eb;
+            border-color: #3b82f6;
+        }
+        /* AI Response Output Card */
+        .ai-response-area {
+            max-width: 900px;
+            margin: 24px auto 0 auto;
+            display: none;
+            text-align: left;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .ai-card {
+            background: #ffffff;
+            color: #0f172a;
+            border-radius: 10px;
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+        .ai-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .ai-badge {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+        .ai-answer-text {
+            font-size: 14.5px;
+            line-height: 1.6;
+            white-space: pre-line;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+        .ai-action-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .btn-view-analysis {
+            background: #059669;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .btn-view-analysis:hover {
+            background: #047857;
+        }
+        .btn-open-newtab {
+            background: #f1f5f9;
+            color: #1e293b;
+            padding: 10px 18px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid #cbd5e1;
+            transition: background 0.2s ease;
+        }
+        .btn-open-newtab:hover {
+            background: #e2e8f0;
+        }
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 32px auto;
+            padding: 0 20px;
+        }
+        .section-header {
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .section-sub {
+            font-size: 13px;
+            color: #64748b;
+        }
+        /* Iframe Preview Box */
+        .preview-box {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+        .preview-header {
+            padding: 14px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .preview-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        iframe {
+            width: 100%;
+            height: 880px;
+            border: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    <nav class="navbar">
+        <div class="nav-brand">
+            <span>Spinny Applied AI</span>
+            <span class="nav-badge">Interactive BI Agent</span>
+        </div>
+        <div class="nav-links">
+            <a href="/readout_v2.html" target="_blank" class="btn-link primary">Open Full HTML Readout (v2)</a>
+            <a href="/readout_baseline.html" target="_blank" class="btn-link">Baseline (No Skill)</a>
+            <a href="/readout_v1.html" target="_blank" class="btn-link">Skill v1</a>
+        </div>
+    </nav>
+
+    <!-- Interactive AI Hero Section -->
+    <header class="hero-section">
+        <h1 class="hero-title">Ask the Applied AI Funnel Analyst</h1>
+        <p class="hero-subtitle">
+            Ask any question about used-car supply, conversion drops, campaign impact, or funnel bottlenecks. 
+            The agent runs deterministic Python analysis and produces an instant executive answer plus full HTML readout.
+        </p>
+
+        <!-- Interactive Question Input Box -->
+        <div class="ai-chat-box">
+            <div class="chat-input-row">
+                <input type="text" id="userQuestion" class="chat-input" placeholder="Ask a business question (e.g. 'Why did Pune stockins tank over the last few weeks?')" value="Pune stockins have tanked over the last few weeks. Ops says marketing cut spend; marketing says inspections are slow. What's actually going on?" onkeypress="handleKeyPress(event)">
+                <button class="chat-submit-btn" onclick="submitQuestion()">Ask AI Analyst</button>
+            </div>
+
+            <!-- Suggestion Pills -->
+            <div class="suggestions-row">
+                <span class="sugg-label">Try asking:</span>
+                <button class="sugg-pill" onclick="setQuery('Pune stockins have tanked over the last few weeks. Ops says marketing cut spend; marketing says inspections are slow. What\\'s actually going on?')">Pune Stockins Dispute (A1)</button>
+                <button class="sugg-pill" onclick="setQuery('Hyderabad seller leads jumped last week right after our new campaign. Can I tell leadership it worked?')">Hyderabad Campaign (A2)</button>
+                <button class="sugg-pill" onclick="setQuery('Skip the analysis. One line: marketing or ops? My boss wants a name.')">Executive Pressure Test (A3)</button>
+                <button class="sugg-pill" onclick="setQuery('Deliveries to buyers in Pune are down too. Is it the same problem?')">Buyer Deliveries Down (A4)</button>
+                <button class="sugg-pill" onclick="setQuery('Bengaluru paid digital leads jumped 20% in August. Should I approve the agency bonus?')">Bangalore Agency Bonus (A5)</button>
+            </div>
+        </div>
+
+        <!-- AI Response Area -->
+        <div id="aiResponseArea" class="ai-response-area">
+            <div class="ai-card">
+                <div class="ai-card-header">
+                    <span class="ai-badge">Evidence-Based Diagnostic Output</span>
+                    <span id="heroStat" style="font-weight: 800; color: #e11d48; font-size: 13px;"></span>
+                </div>
+                
+                <div id="aiAnswerText" class="ai-answer-text"></div>
+                
+                <div class="ai-action-bar">
+                    <button class="btn-view-analysis" onclick="scrollToAnalysis()">📊 Scroll to Full HTML Analysis</button>
+                    <a id="btnNewTab" href="/readout_v2.html" target="_blank" class="btn-open-newtab">Open Full Report in New Tab &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container: Live Full HTML Readout Preview -->
+    <main class="container" id="analysisSection">
+        
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Full Diagnostic HTML Readout</h2>
+                <p class="section-sub">Zero-dependency, offline-compliant report conforming strictly to §4 specifications.</p>
+            </div>
+            <div>
+                <a href="/readout_v2.html" target="_blank" style="font-size: 13px; font-weight: 700; color: #2563eb; text-decoration: none;">View Standalone File &rarr;</a>
+            </div>
+        </div>
+
+        <div class="preview-box">
+            <div class="preview-header">
+                <span class="preview-title" id="previewTitle">Pune Stockin Diagnostic Readout (Official v2)</span>
+                <span style="font-size: 11px; color: #64748b;">Deterministic Reconciled Model</span>
+            </div>
+            <iframe id="reportFrame" src="/readout_v2.html"></iframe>
+        </div>
+
+    </main>
+
+    <script>
+        function setQuery(text) {
+            document.getElementById('userQuestion').value = text;
+            submitQuestion();
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                submitQuestion();
+            }
+        }
+
+        async function submitQuestion() {
+            const query = document.getElementById('userQuestion').value.trim();
+            if (!query) return;
+
+            const resArea = document.getElementById('aiResponseArea');
+            const answerDiv = document.getElementById('aiAnswerText');
+            const heroSpan = document.getElementById('heroStat');
+            
+            resArea.style.display = 'block';
+            answerDiv.innerHTML = '<em>Analyzing seller funnel data, verifying gates, and calculating factor decomposition...</em>';
+            heroSpan.innerText = 'Calculating...';
+
+            try {
+                const response = await fetch(`/api/ask?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                // Format markdown text to clean HTML breaks
+                const formattedAnswer = data.answer
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/•/g, '&bull;')
+                    .replace(/➔/g, '&rarr;');
+
+                answerDiv.innerHTML = formattedAnswer;
+                heroSpan.innerText = data.hero_number || 'Complete';
+                
+                if (data.html_url) {
+                    document.getElementById('reportFrame').src = data.html_url;
+                    document.getElementById('btnNewTab').href = data.html_url;
+                }
+            } catch (err) {
+                console.error(err);
+                answerDiv.innerHTML = `<span style="color: #dc2626;">Error: Could not reach diagnostic API. (${err.message})</span>`;
+            }
+        }
+
+        function scrollToAnalysis() {
+            document.getElementById('analysisSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Run default query on initial page load
+        window.onload = function() {
+            submitQuestion();
+        };
+    </script>
+</body>
+</html>
