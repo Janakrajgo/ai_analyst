@@ -73,7 +73,8 @@ def process_natural_language_query(query):
     elif "hyderabad" in q: city = "Hyderabad"
 
     metric = "stockins"
-    if "lead" in q: metric = "leads"
+    if "stockin" in q: metric = "stockins"
+    elif "lead" in q: metric = "leads"
     elif "inspection" in q: metric = "inspections_done"
     elif "offer" in q: metric = "offers_made"
 

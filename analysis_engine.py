@@ -67,11 +67,21 @@ def run_investigation(
         stockins=("stockins", "sum")
     ).reset_index()
     
-    base_series = weekly_city[weekly_city["week_start"].isin(baseline_weeks)][metric]
+    col_map = {
+        "stockins": "stockins",
+        "leads": "leads",
+        "inspections": "inspections",
+        "inspections_done": "inspections",
+        "offers": "offers",
+        "offers_made": "offers"
+    }
+    metric_col = col_map.get(metric, "stockins")
+    
+    base_series = weekly_city[weekly_city["week_start"].isin(baseline_weeks)][metric_col]
     base_mean = float(base_series.mean())
     base_std = float(base_series.std())
     
-    target_series = weekly_city[weekly_city["week_start"].isin(target_weeks)][metric]
+    target_series = weekly_city[weekly_city["week_start"].isin(target_weeks)][metric_col]
     target_mean = float(target_series.mean())
     
     # 5. Gate 5: Statistical Significance Check
